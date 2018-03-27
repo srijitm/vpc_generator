@@ -1,0 +1,156 @@
+{
+    "project": {
+        "tag": "pp-stage",
+        "name": "PlanPlus",
+        "env": "Staging",
+        "ticket": "PPAWS-6",
+        "az1": "ca-central-1a",
+        "az2": "ca-central-1b"
+    },
+
+    "key_name": "pp-staging",
+
+    "ssl_cert": "arn:aws:acm:ca-central-1:548829387871:certificate/9448f243-049c-4c0e-b553-4d4fc6fde830",
+
+    "domain": "planplusplanitstaging.com",
+    
+    "pp_ips": {
+        "ssh": [
+            "52.60.99.9/32",
+            "104.255.12.228/32",
+            "64.231.34.140/32",
+            "45.42.14.251/32"
+        ],
+        "rdp": [
+            "52.60.99.9/32"
+        ]
+    },
+
+    "customer_ips": {
+        "ssh": [
+        ],
+        "http": [
+        ]
+    },
+
+    "bastion": {
+        "num_nodes": "1",
+        "canonical_name": "bas",
+        "ec2_instance_type": "t2.medium",
+        "ami_id": "ami-89bf3aed"
+    },
+
+    "web": {
+        "canonical_name": "web",
+        "ec2_instance_type": "r4.large",
+        "ami_id": "ami-f9a4209d"
+    },
+
+    "api": {
+        "canonical_name": "api",
+        "ec2_instance_type": "r4.large",
+        "ami_id": "ami-f9a4209d"
+    },
+
+    "rds": {
+        "num_nodes": "8",
+        "canonical_name": "rds",
+        "ec2_instance_type": "db.m4.large",
+        "allocation_size": [ "500",
+                             "50",
+                             "150",
+                             "50",
+                             "100",
+                             "20",
+                             "250",
+                             "100" 
+                            ],
+        "parameter_group": "mysql-custom-parametergroup-5-7"
+    },
+
+    "bulkldr": {
+        "num_nodes": "1",
+        "canonical_name": "blk",
+        "ec2_instance_type": "m4.large",
+        "ami_id": "ami-1aee6b7e"
+    },
+
+    "win": {
+        "num_nodes": "3",
+        "canonical_name": "win",
+        "ec2_instance_type": "m4.large",
+        "ami_id": "ami-f9ed689d"
+    },
+
+    "customers": {
+        "educator" : {
+            "canonical_name": "edu",
+            "port": "10080" 
+        },
+        "atb" : {
+            "canonical_name": "atb",
+            "port": "11080" 
+        },
+        "asp" : {
+            "canonical_name": "asp",
+            "port": "12080" 
+        },
+        "credential-cu" : {
+            "canonical_name": "ccu",
+            "port": "13080" 
+        },
+        "cimb" : {
+            "canonical_name": "cimb",
+            "port": "14080" 
+        },
+        "coastcapital" : {
+            "canonical_name": "ccap",
+            "port": "15080" 
+        },
+        "dynamic" : {
+            "canonical_name": "dyn",
+            "port": "16080" 
+        },
+        "holliswealth" : {
+            "canonical_name": "hollis",
+            "port": "17080" 
+        },
+        "ipc" : {
+            "canonical_name": "ipc",
+            "port": "18080" 
+        },
+        "md1" : {
+            "canonical_name": "md1",
+            "port": "25080" 
+        },
+        "md2" : {
+            "canonical_name": "md2",
+            "port": "26080" 
+        },
+        "md3" : {
+            "canonical_name": "md3",
+            "port": "27080" 
+        },
+        "nbf" : {
+            "canonical_name": "nbf",
+            "port": "20080" 
+        },
+        "qtrade" : {
+            "canonical_name": "qtrd",
+            "port": "21080" 
+        },
+        "raymondjames" : {
+            "canonical_name": "rj",
+            "port": "22080" 
+        },
+        "student" : {
+            "canonical_name": "stdnt",
+            "port": "23080" 
+        },
+        "westminster" : {
+            "canonical_name": "wst",
+            "port": "24080" 
+        }
+    }
+
+}

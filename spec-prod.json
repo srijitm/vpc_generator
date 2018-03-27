@@ -1,0 +1,78 @@
+{
+    "project": {
+        "tag": "NMB",
+        "name": "Nimbus",
+        "env": "Production",
+        "ticket": "NIMBUS-123",
+        "az1": "ca-central-1a",
+        "az2": "ca-central-1b",
+        "desc": "Nimbus Innovation Inc."
+    },
+
+    "key_name": "nimbus-prod",
+
+    "ssl_cert": "arn:aws:acm:ca-central-1:548829387871:certificate/65d3286a-d323-458a-a8bc-0d6dsdaf72d137d",
+    
+    "domain": "nimbus.com",
+
+    "ops_ips": {
+        "ssh": [
+            "45.42.14.251/32"
+        ]
+    },
+
+    "customer_ips": {
+        "ssh": [
+        ],
+        "http": [
+        ]
+    },
+
+    "bastion": {
+        "num_nodes": "1",
+        "canonical_name": "bas",
+        "ec2_instance_type": "t2.micro",
+        "ami_id": "ami-89bf3aed"
+    },
+
+    "web": {
+        "canonical_name": "web",
+        "ec2_instance_type": "t2.micro",
+        "ami_id": "ami-f9a4209d"
+    },
+
+    "api": {
+        "canonical_name": "api",
+        "ec2_instance_type": "t2.micro",
+        "ami_id": "ami-f9a4209d"
+    },
+
+    "rds": {
+        "num_nodes": "3",
+        "canonical_name": "rds",
+        "ec2_instance_type": "db.t2.micro",
+        "master_key": "arn:aws:kms:ca-central-1:548829387871:key/7bedf96d-c86c-4e06-9fe6-69dsdf900ffd1",
+        "master_password": "tq-pW2*fJyhL+Z3F",
+        "allocation_size": [ "500",
+                             "50",
+                             "150"
+                            ],
+        "parameter_group": "mysql-custom-parametergroup-5-7"
+    },
+
+    "customers": {
+        "client1" : {
+            "canonical_name": "client1",
+            "port": "10080" 
+        },
+        "client2" : {
+            "canonical_name": "client2",
+            "port": "20080" 
+        },
+        "client3" : {
+            "canonical_name": "client3",
+            "port": "30080" 
+        }
+    }
+
+}

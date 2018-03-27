@@ -1,0 +1,2180 @@
+{
+    "Description": "Nimbus Innovation Inc.",
+    "Parameters": {
+        "AvailabilityZone01": {
+            "Default": "ca-central-1a",
+            "Description": "VPC AvailabilityZone01",
+            "Type": "String"
+        },
+        "AvailabilityZone02": {
+            "Default": "ca-central-1b",
+            "Description": "VPC AvailabilityZone02",
+            "Type": "String"
+        },
+        "InternetGatewayCidr": {
+            "Default": "0.0.0.0/0",
+            "Description": "Internet Gateway CIDR",
+            "Type": "String"
+        },
+        "NatGatewayCidr": {
+            "Default": "0.0.0.0/0",
+            "Description": "Nat Gateway CIDR",
+            "Type": "String"
+        },
+        "PublicSubnet01Cidr": {
+            "Default": "10.0.0.0/24",
+            "Description": "PublicSubnet01 CIDR",
+            "Type": "String"
+        },
+        "PublicSubnet02Cidr": {
+            "Default": "10.0.1.0/24",
+            "Description": "PublicSubnet02 CIDR",
+            "Type": "String"
+        },
+        "VpcCidr": {
+            "Default": "10.0.0.0/16",
+            "Description": "VPC CIDR",
+            "Type": "String"
+        },
+        "apiAsgCapacity": {
+            "Default": "2",
+            "Description": "Desired capcacity of AutoScalingGroup",
+            "Type": "Number"
+        },
+        "apiAsgCooldown": {
+            "Default": "360",
+            "Description": "Cooldown before starting/stopping another instance",
+            "Type": "Number"
+        },
+        "apiAsgHealthGrace": {
+            "Default": "360",
+            "Description": "Wait before starting/stopping another instance",
+            "Type": "Number"
+        },
+        "apiAsgMaxSize": {
+            "Default": "5",
+            "Description": "Maximum size of AutoScalingGroup",
+            "Type": "Number"
+        },
+        "apiAsgMinSize": {
+            "Default": "2",
+            "Description": "Minimum size of AutoScalingGroup",
+            "Type": "Number"
+        },
+        "dbPort": {
+            "Default": "3306",
+            "Description": "TCP/IP port of the web server",
+            "Type": "String"
+        },
+        "privateDbSubnet01Cidr": {
+            "Default": "10.0.4.0/24",
+            "Description": "PrivateDbSubnet01 CIDR",
+            "Type": "String"
+        },
+        "privateDbSubnet02Cidr": {
+            "Default": "10.0.5.0/24",
+            "Description": "PrivateDbSubnet02 CIDR",
+            "Type": "String"
+        },
+        "privateWebSubnet01Cidr": {
+            "Default": "10.0.2.0/24",
+            "Description": "PrivateWebSubnet01 CIDR",
+            "Type": "String"
+        },
+        "privateWebSubnet02Cidr": {
+            "Default": "10.0.3.0/24",
+            "Description": "PrivateWebSubnet02 CIDR",
+            "Type": "String"
+        },
+        "tomcatPort": {
+            "Default": "80",
+            "Description": "TCP/IP port of the web server",
+            "Type": "String"
+        },
+        "webAsgCapacity": {
+            "Default": "2",
+            "Description": "Desired capcacity of AutoScalingGroup",
+            "Type": "Number"
+        },
+        "webAsgCooldown": {
+            "Default": "360",
+            "Description": "Cooldown before starting/stopping another instance",
+            "Type": "Number"
+        },
+        "webAsgHealthGrace": {
+            "Default": "360",
+            "Description": "Wait before starting/stopping another instance",
+            "Type": "Number"
+        },
+        "webAsgMaxSize": {
+            "Default": "5",
+            "Description": "Maximum size of AutoScalingGroup",
+            "Type": "Number"
+        },
+        "webAsgMinSize": {
+            "Default": "2",
+            "Description": "Minimum size of AutoScalingGroup",
+            "Type": "Number"
+        }
+    },
+    "Resources": {
+        "AttachInternetGatewayToPublicRouteTable": {
+            "Properties": {
+                "DestinationCidrBlock": {
+                    "Ref": "InternetGatewayCidr"
+                },
+                "GatewayId": {
+                    "Ref": "InternetGateway"
+                },
+                "RouteTableId": {
+                    "Ref": "publicRouteTable"
+                }
+            },
+            "Type": "AWS::EC2::Route"
+        },
+        "AttachInternetGatewayToVPC": {
+            "Properties": {
+                "InternetGatewayId": {
+                    "Ref": "InternetGateway"
+                },
+                "VpcId": {
+                    "Ref": "VPC"
+                }
+            },
+            "Type": "AWS::EC2::VPCGatewayAttachment"
+        },
+        "AttachNatGatewayToPrivateRouteTable": {
+            "Properties": {
+                "DestinationCidrBlock": {
+                    "Ref": "NatGatewayCidr"
+                },
+                "NatGatewayId": {
+                    "Ref": "natGateway"
+                },
+                "RouteTableId": {
+                    "Ref": "natRouteTable"
+                }
+            },
+            "Type": "AWS::EC2::Route"
+        },
+        "InternetGateway": {
+            "Properties": {
+                "Tags": [
+                    {
+                        "Key": "Environment",
+                        "Value": "Production"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "NMB",
+                                    "-IGW"
+                                ]
+                            ]
+                        }
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "Nimbus"
+                    },
+                    {
+                        "Key": "Ticket",
+                        "Value": "NIMBUS-123"
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::InternetGateway"
+        },
+        "VPC": {
+            "Properties": {
+                "CidrBlock": {
+                    "Ref": "VpcCidr"
+                },
+                "EnableDnsHostnames": "true",
+                "EnableDnsSupport": "true",
+                "Tags": [
+                    {
+                        "Key": "Environment",
+                        "Value": "Production"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "NMB",
+                                    "-",
+                                    "Production",
+                                    "-VPC"
+                                ]
+                            ]
+                        }
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "Nimbus"
+                    },
+                    {
+                        "Key": "Ticket",
+                        "Value": "NIMBUS-123"
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::VPC"
+        },
+        "albHttpListener": {
+            "Properties": {
+                "DefaultActions": [
+                    {
+                        "TargetGroupArn": {
+                            "Ref": "defaultTargetGroup"
+                        },
+                        "Type": "forward"
+                    }
+                ],
+                "LoadBalancerArn": {
+                    "Ref": "applicationLoadBalancer"
+                },
+                "Port": "80",
+                "Protocol": "HTTP"
+            },
+            "Type": "AWS::ElasticLoadBalancingV2::Listener"
+        },
+        "albHttpsListener": {
+            "Properties": {
+                "Certificates": [
+                    {
+                        "CertificateArn": "arn:aws:acm:ca-central-1:548829387871:certificate/65d3286a-d323-458a-a8bc-0d6dsdaf72d137d"
+                    }
+                ],
+                "DefaultActions": [
+                    {
+                        "TargetGroupArn": {
+                            "Ref": "defaultTargetGroup"
+                        },
+                        "Type": "forward"
+                    }
+                ],
+                "LoadBalancerArn": {
+                    "Ref": "applicationLoadBalancer"
+                },
+                "Port": "443",
+                "Protocol": "HTTPS"
+            },
+            "Type": "AWS::ElasticLoadBalancingV2::Listener"
+        },
+        "albSecurityGroup": {
+            "Properties": {
+                "GroupDescription": "Allow all necessary ports from the internet",
+                "SecurityGroupIngress": [
+                    {
+                        "CidrIp": "0.0.0.0/0",
+                        "FromPort": "443",
+                        "IpProtocol": "tcp",
+                        "ToPort": "443"
+                    },
+                    {
+                        "CidrIp": "0.0.0.0/0",
+                        "FromPort": "80",
+                        "IpProtocol": "tcp",
+                        "ToPort": "80"
+                    }
+                ],
+                "Tags": [
+                    {
+                        "Key": "Environment",
+                        "Value": "Production"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "NMB",
+                                    "-albSecurityGroup"
+                                ]
+                            ]
+                        }
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "Nimbus"
+                    },
+                    {
+                        "Key": "Ticket",
+                        "Value": "NIMBUS-123"
+                    }
+                ],
+                "VpcId": {
+                    "Ref": "VPC"
+                }
+            },
+            "Type": "AWS::EC2::SecurityGroup"
+        },
+        "apiAsgScalingIn": {
+            "Properties": {
+                "AdjustmentType": "ChangeInCapacity",
+                "AutoScalingGroupName": {
+                    "Ref": "apiAutoScalingGroup"
+                },
+                "Cooldown": "360",
+                "ScalingAdjustment": "-1"
+            },
+            "Type": "AWS::AutoScaling::ScalingPolicy"
+        },
+        "apiAsgScalingOut": {
+            "Properties": {
+                "AdjustmentType": "ChangeInCapacity",
+                "AutoScalingGroupName": {
+                    "Ref": "apiAutoScalingGroup"
+                },
+                "Cooldown": "360",
+                "ScalingAdjustment": "1"
+            },
+            "Type": "AWS::AutoScaling::ScalingPolicy"
+        },
+        "apiAutoScalingGroup": {
+            "Properties": {
+                "Cooldown": {
+                    "Ref": "apiAsgCooldown"
+                },
+                "DesiredCapacity": {
+                    "Ref": "apiAsgCapacity"
+                },
+                "HealthCheckGracePeriod": {
+                    "Ref": "apiAsgHealthGrace"
+                },
+                "HealthCheckType": "EC2",
+                "LaunchConfigurationName": {
+                    "Ref": "apiEC2LaunchConfiguration"
+                },
+                "MaxSize": {
+                    "Ref": "apiAsgMaxSize"
+                },
+                "MetricsCollection": [
+                    {
+                        "Granularity": "1Minute"
+                    }
+                ],
+                "MinSize": {
+                    "Ref": "apiAsgMinSize"
+                },
+                "Tags": [
+                    {
+                        "Key": "Environment",
+                        "PropagateAtLaunch": "true",
+                        "Value": "Production"
+                    },
+                    {
+                        "Key": "Name",
+                        "PropagateAtLaunch": "true",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "NMB",
+                                    "-",
+                                    "api"
+                                ]
+                            ]
+                        }
+                    },
+                    {
+                        "Key": "Project",
+                        "PropagateAtLaunch": "true",
+                        "Value": "Nimbus"
+                    },
+                    {
+                        "Key": "Ticket",
+                        "PropagateAtLaunch": "true",
+                        "Value": "NIMBUS-123"
+                    }
+                ],
+                "TargetGroupARNs": [
+                    {
+                        "Ref": "client1ApiTargetGroup"
+                    },
+                    {
+                        "Ref": "client2ApiTargetGroup"
+                    },
+                    {
+                        "Ref": "client3ApiTargetGroup"
+                    }
+                ],
+                "VPCZoneIdentifier": [
+                    {
+                        "Ref": "privateWebSubnet01"
+                    },
+                    {
+                        "Ref": "privateWebSubnet02"
+                    }
+                ]
+            },
+            "Type": "AWS::AutoScaling::AutoScalingGroup"
+        },
+        "apiEC2LaunchConfiguration": {
+            "Properties": {
+                "AssociatePublicIpAddress": "false",
+                "ImageId": "ami-f9a4209d",
+                "InstanceType": "t2.micro",
+                "KeyName": "nimbus-prod",
+                "SecurityGroups": [
+                    {
+                        "Ref": "feSecurityGroup"
+                    }
+                ]
+            },
+            "Type": "AWS::AutoScaling::LaunchConfiguration"
+        },
+        "apiHighMemoryUsageAlarm": {
+            "Properties": {
+                "AlarmActions": [
+                    {
+                        "Ref": "apiAsgScalingOut"
+                    }
+                ],
+                "AlarmDescription": "Alarm if less than 512 MB of available memory",
+                "ComparisonOperator": "LessThanThreshold",
+                "Dimensions": [
+                    {
+                        "Name": "AutoScalingGroupName",
+                        "Value": {
+                            "Ref": "apiAutoScalingGroup"
+                        }
+                    }
+                ],
+                "EvaluationPeriods": "1",
+                "MetricName": "MemoryAvailable",
+                "Namespace": "System/Linux",
+                "Period": "1800",
+                "Statistic": "Average",
+                "Threshold": "512"
+            },
+            "Type": "AWS::CloudWatch::Alarm"
+        },
+        "apiLowMemoryUsageAlarm": {
+            "Properties": {
+                "AlarmActions": [
+                    {
+                        "Ref": "apiAsgScalingIn"
+                    }
+                ],
+                "AlarmDescription": "Alarm if more than 2048 MB of available memory",
+                "ComparisonOperator": "GreaterThanThreshold",
+                "Dimensions": [
+                    {
+                        "Name": "AutoScalingGroupName",
+                        "Value": {
+                            "Ref": "apiAutoScalingGroup"
+                        }
+                    }
+                ],
+                "EvaluationPeriods": "1",
+                "MetricName": "MemoryAvailable",
+                "Namespace": "System/Linux",
+                "Period": "1800",
+                "Statistic": "Average",
+                "Threshold": "2048"
+            },
+            "Type": "AWS::CloudWatch::Alarm"
+        },
+        "applicationLoadBalancer": {
+            "Properties": {
+                "Name": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "NMB",
+                            "-ALB"
+                        ]
+                    ]
+                },
+                "Scheme": "internet-facing",
+                "SecurityGroups": [
+                    {
+                        "Ref": "albSecurityGroup"
+                    }
+                ],
+                "Subnets": [
+                    {
+                        "Ref": "publicSubnet01"
+                    },
+                    {
+                        "Ref": "publicSubnet02"
+                    }
+                ],
+                "Tags": [
+                    {
+                        "Key": "Environment",
+                        "Value": "Production"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "NMB",
+                                    "-ALB"
+                                ]
+                            ]
+                        }
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "Nimbus"
+                    },
+                    {
+                        "Key": "Ticket",
+                        "Value": "NIMBUS-123"
+                    }
+                ]
+            },
+            "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer"
+        },
+        "bas01": {
+            "Properties": {
+                "ImageId": "ami-89bf3aed",
+                "InstanceType": "t2.micro",
+                "KeyName": "nimbus-prod",
+                "SourceDestCheck": "false",
+                "Tags": [
+                    {
+                        "Key": "Environment",
+                        "Value": "Production"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "NMB",
+                                    "-",
+                                    "bas",
+                                    "-",
+                                    "01"
+                                ]
+                            ]
+                        }
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "Nimbus"
+                    },
+                    {
+                        "Key": "Ticket",
+                        "Value": "NIMBUS-123"
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::Instance"
+        },
+        "basSecurityGroup": {
+            "Properties": {
+                "GroupDescription": "Allow SSH connections from an approved list of IPs",
+                "SecurityGroupIngress": [
+                    {
+                        "CidrIp": "52.60.99.9/32",
+                        "FromPort": "22",
+                        "IpProtocol": "tcp",
+                        "ToPort": "22"
+                    },
+                    {
+                        "CidrIp": "104.255.12.228/32",
+                        "FromPort": "22",
+                        "IpProtocol": "tcp",
+                        "ToPort": "22"
+                    },
+                    {
+                        "CidrIp": "64.231.34.140/32",
+                        "FromPort": "22",
+                        "IpProtocol": "tcp",
+                        "ToPort": "22"
+                    },
+                    {
+                        "CidrIp": "45.42.14.251/32",
+                        "FromPort": "22",
+                        "IpProtocol": "tcp",
+                        "ToPort": "22"
+                    }
+                ],
+                "Tags": [
+                    {
+                        "Key": "Environment",
+                        "Value": "Production"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "NMB",
+                                    "-basSecurityGroup"
+                                ]
+                            ]
+                        }
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "Nimbus"
+                    },
+                    {
+                        "Key": "Ticket",
+                        "Value": "NIMBUS-123"
+                    }
+                ],
+                "VpcId": {
+                    "Ref": "VPC"
+                }
+            },
+            "Type": "AWS::EC2::SecurityGroup"
+        },
+        "client1ApiTargetGroup": {
+            "Properties": {
+                "HealthCheckIntervalSeconds": "20",
+                "HealthCheckPath": "/api/1.0/robo/version",
+                "HealthCheckProtocol": "HTTP",
+                "HealthCheckTimeoutSeconds": "10",
+                "HealthyThresholdCount": "4",
+                "Matcher": {
+                    "HttpCode": "200"
+                },
+                "Name": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "NMB",
+                            "-",
+                            "client1",
+                            "-apiLayer"
+                        ]
+                    ]
+                },
+                "Port": "10080",
+                "Protocol": "HTTP",
+                "Tags": [
+                    {
+                        "Key": "Environment",
+                        "Value": "Production"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "NMB",
+                                    "-",
+                                    "client1",
+                                    "-apiLayer"
+                                ]
+                            ]
+                        }
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "Nimbus"
+                    },
+                    {
+                        "Key": "Ticket",
+                        "Value": "NIMBUS-123"
+                    }
+                ],
+                "UnhealthyThresholdCount": "3",
+                "VpcId": {
+                    "Ref": "VPC"
+                }
+            },
+            "Type": "AWS::ElasticLoadBalancingV2::TargetGroup"
+        },
+        "client1WebTargetGroup": {
+            "Properties": {
+                "HealthCheckIntervalSeconds": "20",
+                "HealthCheckPath": "/",
+                "HealthCheckProtocol": "HTTP",
+                "HealthCheckTimeoutSeconds": "10",
+                "HealthyThresholdCount": "4",
+                "Matcher": {
+                    "HttpCode": "200"
+                },
+                "Name": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "NMB",
+                            "-",
+                            "client1",
+                            "-webLayer"
+                        ]
+                    ]
+                },
+                "Port": "10080",
+                "Protocol": "HTTP",
+                "Tags": [
+                    {
+                        "Key": "Environment",
+                        "Value": "Production"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "NMB",
+                                    "-",
+                                    "client1",
+                                    "-webLayer"
+                                ]
+                            ]
+                        }
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "Nimbus"
+                    },
+                    {
+                        "Key": "Ticket",
+                        "Value": "NIMBUS-123"
+                    }
+                ],
+                "UnhealthyThresholdCount": "3",
+                "VpcId": {
+                    "Ref": "VPC"
+                }
+            },
+            "Type": "AWS::ElasticLoadBalancingV2::TargetGroup"
+        },
+        "client1apiListenerRule": {
+            "Properties": {
+                "Actions": [
+                    {
+                        "TargetGroupArn": {
+                            "Ref": "client1ApiTargetGroup"
+                        },
+                        "Type": "forward"
+                    }
+                ],
+                "Conditions": [
+                    {
+                        "Field": "host-header",
+                        "Values": [
+                            {
+                                "Fn::Join": [
+                                    "",
+                                    [
+                                        "client1",
+                                        ".",
+                                        "nimbus.com"
+                                    ]
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "Field": "path-pattern",
+                        "Values": [
+                            "/api/*"
+                        ]
+                    }
+                ],
+                "ListenerArn": {
+                    "Ref": "albHttpsListener"
+                },
+                "Priority": 1
+            },
+            "Type": "AWS::ElasticLoadBalancingV2::ListenerRule"
+        },
+        "client1webListenerRule": {
+            "Properties": {
+                "Actions": [
+                    {
+                        "TargetGroupArn": {
+                            "Ref": "client1WebTargetGroup"
+                        },
+                        "Type": "forward"
+                    }
+                ],
+                "Conditions": [
+                    {
+                        "Field": "host-header",
+                        "Values": [
+                            {
+                                "Fn::Join": [
+                                    "",
+                                    [
+                                        "client1",
+                                        ".",
+                                        "nimbus.com"
+                                    ]
+                                ]
+                            }
+                        ]
+                    }
+                ],
+                "ListenerArn": {
+                    "Ref": "albHttpsListener"
+                },
+                "Priority": 2
+            },
+            "Type": "AWS::ElasticLoadBalancingV2::ListenerRule"
+        },
+        "client2ApiTargetGroup": {
+            "Properties": {
+                "HealthCheckIntervalSeconds": "20",
+                "HealthCheckPath": "/api/1.0/robo/version",
+                "HealthCheckProtocol": "HTTP",
+                "HealthCheckTimeoutSeconds": "10",
+                "HealthyThresholdCount": "4",
+                "Matcher": {
+                    "HttpCode": "200"
+                },
+                "Name": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "NMB",
+                            "-",
+                            "client2",
+                            "-apiLayer"
+                        ]
+                    ]
+                },
+                "Port": "20080",
+                "Protocol": "HTTP",
+                "Tags": [
+                    {
+                        "Key": "Environment",
+                        "Value": "Production"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "NMB",
+                                    "-",
+                                    "client2",
+                                    "-apiLayer"
+                                ]
+                            ]
+                        }
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "Nimbus"
+                    },
+                    {
+                        "Key": "Ticket",
+                        "Value": "NIMBUS-123"
+                    }
+                ],
+                "UnhealthyThresholdCount": "3",
+                "VpcId": {
+                    "Ref": "VPC"
+                }
+            },
+            "Type": "AWS::ElasticLoadBalancingV2::TargetGroup"
+        },
+        "client2WebTargetGroup": {
+            "Properties": {
+                "HealthCheckIntervalSeconds": "20",
+                "HealthCheckPath": "/",
+                "HealthCheckProtocol": "HTTP",
+                "HealthCheckTimeoutSeconds": "10",
+                "HealthyThresholdCount": "4",
+                "Matcher": {
+                    "HttpCode": "200"
+                },
+                "Name": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "NMB",
+                            "-",
+                            "client2",
+                            "-webLayer"
+                        ]
+                    ]
+                },
+                "Port": "20080",
+                "Protocol": "HTTP",
+                "Tags": [
+                    {
+                        "Key": "Environment",
+                        "Value": "Production"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "NMB",
+                                    "-",
+                                    "client2",
+                                    "-webLayer"
+                                ]
+                            ]
+                        }
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "Nimbus"
+                    },
+                    {
+                        "Key": "Ticket",
+                        "Value": "NIMBUS-123"
+                    }
+                ],
+                "UnhealthyThresholdCount": "3",
+                "VpcId": {
+                    "Ref": "VPC"
+                }
+            },
+            "Type": "AWS::ElasticLoadBalancingV2::TargetGroup"
+        },
+        "client2apiListenerRule": {
+            "Properties": {
+                "Actions": [
+                    {
+                        "TargetGroupArn": {
+                            "Ref": "client2ApiTargetGroup"
+                        },
+                        "Type": "forward"
+                    }
+                ],
+                "Conditions": [
+                    {
+                        "Field": "host-header",
+                        "Values": [
+                            {
+                                "Fn::Join": [
+                                    "",
+                                    [
+                                        "client2",
+                                        ".",
+                                        "nimbus.com"
+                                    ]
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "Field": "path-pattern",
+                        "Values": [
+                            "/api/*"
+                        ]
+                    }
+                ],
+                "ListenerArn": {
+                    "Ref": "albHttpsListener"
+                },
+                "Priority": 3
+            },
+            "Type": "AWS::ElasticLoadBalancingV2::ListenerRule"
+        },
+        "client2webListenerRule": {
+            "Properties": {
+                "Actions": [
+                    {
+                        "TargetGroupArn": {
+                            "Ref": "client2WebTargetGroup"
+                        },
+                        "Type": "forward"
+                    }
+                ],
+                "Conditions": [
+                    {
+                        "Field": "host-header",
+                        "Values": [
+                            {
+                                "Fn::Join": [
+                                    "",
+                                    [
+                                        "client2",
+                                        ".",
+                                        "nimbus.com"
+                                    ]
+                                ]
+                            }
+                        ]
+                    }
+                ],
+                "ListenerArn": {
+                    "Ref": "albHttpsListener"
+                },
+                "Priority": 4
+            },
+            "Type": "AWS::ElasticLoadBalancingV2::ListenerRule"
+        },
+        "client3ApiTargetGroup": {
+            "Properties": {
+                "HealthCheckIntervalSeconds": "20",
+                "HealthCheckPath": "/api/1.0/robo/version",
+                "HealthCheckProtocol": "HTTP",
+                "HealthCheckTimeoutSeconds": "10",
+                "HealthyThresholdCount": "4",
+                "Matcher": {
+                    "HttpCode": "200"
+                },
+                "Name": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "NMB",
+                            "-",
+                            "client3",
+                            "-apiLayer"
+                        ]
+                    ]
+                },
+                "Port": "30080",
+                "Protocol": "HTTP",
+                "Tags": [
+                    {
+                        "Key": "Environment",
+                        "Value": "Production"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "NMB",
+                                    "-",
+                                    "client3",
+                                    "-apiLayer"
+                                ]
+                            ]
+                        }
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "Nimbus"
+                    },
+                    {
+                        "Key": "Ticket",
+                        "Value": "NIMBUS-123"
+                    }
+                ],
+                "UnhealthyThresholdCount": "3",
+                "VpcId": {
+                    "Ref": "VPC"
+                }
+            },
+            "Type": "AWS::ElasticLoadBalancingV2::TargetGroup"
+        },
+        "client3WebTargetGroup": {
+            "Properties": {
+                "HealthCheckIntervalSeconds": "20",
+                "HealthCheckPath": "/",
+                "HealthCheckProtocol": "HTTP",
+                "HealthCheckTimeoutSeconds": "10",
+                "HealthyThresholdCount": "4",
+                "Matcher": {
+                    "HttpCode": "200"
+                },
+                "Name": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "NMB",
+                            "-",
+                            "client3",
+                            "-webLayer"
+                        ]
+                    ]
+                },
+                "Port": "30080",
+                "Protocol": "HTTP",
+                "Tags": [
+                    {
+                        "Key": "Environment",
+                        "Value": "Production"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "NMB",
+                                    "-",
+                                    "client3",
+                                    "-webLayer"
+                                ]
+                            ]
+                        }
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "Nimbus"
+                    },
+                    {
+                        "Key": "Ticket",
+                        "Value": "NIMBUS-123"
+                    }
+                ],
+                "UnhealthyThresholdCount": "3",
+                "VpcId": {
+                    "Ref": "VPC"
+                }
+            },
+            "Type": "AWS::ElasticLoadBalancingV2::TargetGroup"
+        },
+        "client3apiListenerRule": {
+            "Properties": {
+                "Actions": [
+                    {
+                        "TargetGroupArn": {
+                            "Ref": "client3ApiTargetGroup"
+                        },
+                        "Type": "forward"
+                    }
+                ],
+                "Conditions": [
+                    {
+                        "Field": "host-header",
+                        "Values": [
+                            {
+                                "Fn::Join": [
+                                    "",
+                                    [
+                                        "client3",
+                                        ".",
+                                        "nimbus.com"
+                                    ]
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "Field": "path-pattern",
+                        "Values": [
+                            "/api/*"
+                        ]
+                    }
+                ],
+                "ListenerArn": {
+                    "Ref": "albHttpsListener"
+                },
+                "Priority": 5
+            },
+            "Type": "AWS::ElasticLoadBalancingV2::ListenerRule"
+        },
+        "client3webListenerRule": {
+            "Properties": {
+                "Actions": [
+                    {
+                        "TargetGroupArn": {
+                            "Ref": "client3WebTargetGroup"
+                        },
+                        "Type": "forward"
+                    }
+                ],
+                "Conditions": [
+                    {
+                        "Field": "host-header",
+                        "Values": [
+                            {
+                                "Fn::Join": [
+                                    "",
+                                    [
+                                        "client3",
+                                        ".",
+                                        "nimbus.com"
+                                    ]
+                                ]
+                            }
+                        ]
+                    }
+                ],
+                "ListenerArn": {
+                    "Ref": "albHttpsListener"
+                },
+                "Priority": 6
+            },
+            "Type": "AWS::ElasticLoadBalancingV2::ListenerRule"
+        },
+        "defaultTargetGroup": {
+            "Properties": {
+                "HealthCheckIntervalSeconds": "20",
+                "HealthCheckPath": "/",
+                "HealthCheckProtocol": "HTTP",
+                "HealthCheckTimeoutSeconds": "10",
+                "HealthyThresholdCount": "4",
+                "Matcher": {
+                    "HttpCode": "301"
+                },
+                "Name": "NMB-default",
+                "Port": 80,
+                "Protocol": "HTTP",
+                "Tags": [
+                    {
+                        "Key": "Environment",
+                        "Value": "Production"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": "NMBdefault"
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "Nimbus"
+                    },
+                    {
+                        "Key": "Ticket",
+                        "Value": "NIMBUS-123"
+                    }
+                ],
+                "UnhealthyThresholdCount": "3",
+                "VpcId": {
+                    "Ref": "VPC"
+                }
+            },
+            "Type": "AWS::ElasticLoadBalancingV2::TargetGroup"
+        },
+        "feSecurityGroup": {
+            "Properties": {
+                "GroupDescription": "Allow connections from Bastion and LB",
+                "SecurityGroupIngress": [
+                    {
+                        "FromPort": "22",
+                        "IpProtocol": "tcp",
+                        "SourceSecurityGroupId": {
+                            "Ref": "basSecurityGroup"
+                        },
+                        "ToPort": "22"
+                    },
+                    {
+                        "FromPort": {
+                            "Ref": "tomcatPort"
+                        },
+                        "IpProtocol": "tcp",
+                        "SourceSecurityGroupId": {
+                            "Ref": "albSecurityGroup"
+                        },
+                        "ToPort": {
+                            "Ref": "tomcatPort"
+                        }
+                    }
+                ],
+                "Tags": [
+                    {
+                        "Key": "Environment",
+                        "Value": "Production"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "NMB",
+                                    "-feSecurityGroup"
+                                ]
+                            ]
+                        }
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "Nimbus"
+                    },
+                    {
+                        "Key": "Ticket",
+                        "Value": "NIMBUS-123"
+                    }
+                ],
+                "VpcId": {
+                    "Ref": "VPC"
+                }
+            },
+            "Type": "AWS::EC2::SecurityGroup"
+        },
+        "natElasticIp": {
+            "Properties": {
+                "Domain": "vpc"
+            },
+            "Type": "AWS::EC2::EIP"
+        },
+        "natGateway": {
+            "Properties": {
+                "AllocationId": {
+                    "Fn::GetAtt": [
+                        "natElasticIp",
+                        "AllocationId"
+                    ]
+                },
+                "SubnetId": {
+                    "Ref": "publicSubnet01"
+                }
+            },
+            "Type": "AWS::EC2::NatGateway"
+        },
+        "natRouteDb01Association": {
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "natRouteTable"
+                },
+                "SubnetId": {
+                    "Ref": "privateDbSubnet01"
+                }
+            },
+            "Type": "AWS::EC2::SubnetRouteTableAssociation"
+        },
+        "natRouteDb02Association": {
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "natRouteTable"
+                },
+                "SubnetId": {
+                    "Ref": "privateDbSubnet02"
+                }
+            },
+            "Type": "AWS::EC2::SubnetRouteTableAssociation"
+        },
+        "natRouteTable": {
+            "Properties": {
+                "Tags": [
+                    {
+                        "Key": "Environment",
+                        "Value": "Production"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "NMB",
+                                    "-NatRouteTable"
+                                ]
+                            ]
+                        }
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "Nimbus"
+                    },
+                    {
+                        "Key": "Ticket",
+                        "Value": "NIMBUS-123"
+                    }
+                ],
+                "VpcId": {
+                    "Ref": "VPC"
+                }
+            },
+            "Type": "AWS::EC2::RouteTable"
+        },
+        "natRouteWeb01Association": {
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "natRouteTable"
+                },
+                "SubnetId": {
+                    "Ref": "privateWebSubnet01"
+                }
+            },
+            "Type": "AWS::EC2::SubnetRouteTableAssociation"
+        },
+        "natRouteWeb02Association": {
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "natRouteTable"
+                },
+                "SubnetId": {
+                    "Ref": "privateWebSubnet02"
+                }
+            },
+            "Type": "AWS::EC2::SubnetRouteTableAssociation"
+        },
+        "privateDbSubnet01": {
+            "Properties": {
+                "AvailabilityZone": {
+                    "Ref": "AvailabilityZone01"
+                },
+                "CidrBlock": {
+                    "Ref": "privateDbSubnet01Cidr"
+                },
+                "Tags": [
+                    {
+                        "Key": "Environment",
+                        "Value": "Production"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "NMB",
+                                    "-PrivateDbSubnet-01"
+                                ]
+                            ]
+                        }
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "Nimbus"
+                    },
+                    {
+                        "Key": "Ticket",
+                        "Value": "NIMBUS-123"
+                    }
+                ],
+                "VpcId": {
+                    "Ref": "VPC"
+                }
+            },
+            "Type": "AWS::EC2::Subnet"
+        },
+        "privateDbSubnet02": {
+            "Properties": {
+                "AvailabilityZone": {
+                    "Ref": "AvailabilityZone02"
+                },
+                "CidrBlock": {
+                    "Ref": "privateDbSubnet02Cidr"
+                },
+                "Tags": [
+                    {
+                        "Key": "Environment",
+                        "Value": "Production"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "NMB",
+                                    "-PrivateDbSubnet-02"
+                                ]
+                            ]
+                        }
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "Nimbus"
+                    },
+                    {
+                        "Key": "Ticket",
+                        "Value": "NIMBUS-123"
+                    }
+                ],
+                "VpcId": {
+                    "Ref": "VPC"
+                }
+            },
+            "Type": "AWS::EC2::Subnet"
+        },
+        "privateDbSubnetGroup": {
+            "Properties": {
+                "DBSubnetGroupDescription": "Subnets available for the RDS DB Instances",
+                "SubnetIds": [
+                    {
+                        "Ref": "privateDbSubnet01"
+                    },
+                    {
+                        "Ref": "privateDbSubnet02"
+                    }
+                ]
+            },
+            "Type": "AWS::RDS::DBSubnetGroup"
+        },
+        "privateWebSubnet01": {
+            "Properties": {
+                "AvailabilityZone": {
+                    "Ref": "AvailabilityZone01"
+                },
+                "CidrBlock": {
+                    "Ref": "privateWebSubnet01Cidr"
+                },
+                "Tags": [
+                    {
+                        "Key": "Environment",
+                        "Value": "Production"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "NMB",
+                                    "-PrivateWebSubnet-01"
+                                ]
+                            ]
+                        }
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "Nimbus"
+                    },
+                    {
+                        "Key": "Ticket",
+                        "Value": "NIMBUS-123"
+                    }
+                ],
+                "VpcId": {
+                    "Ref": "VPC"
+                }
+            },
+            "Type": "AWS::EC2::Subnet"
+        },
+        "privateWebSubnet02": {
+            "Properties": {
+                "AvailabilityZone": {
+                    "Ref": "AvailabilityZone02"
+                },
+                "CidrBlock": {
+                    "Ref": "privateWebSubnet02Cidr"
+                },
+                "Tags": [
+                    {
+                        "Key": "Environment",
+                        "Value": "Production"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "NMB",
+                                    "-PrivateWebSubnet-02"
+                                ]
+                            ]
+                        }
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "Nimbus"
+                    },
+                    {
+                        "Key": "Ticket",
+                        "Value": "NIMBUS-123"
+                    }
+                ],
+                "VpcId": {
+                    "Ref": "VPC"
+                }
+            },
+            "Type": "AWS::EC2::Subnet"
+        },
+        "publicRouteTable": {
+            "Properties": {
+                "Tags": [
+                    {
+                        "Key": "Environment",
+                        "Value": "Production"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "NMB",
+                                    "-PublicRouteTable"
+                                ]
+                            ]
+                        }
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "Nimbus"
+                    },
+                    {
+                        "Key": "Ticket",
+                        "Value": "NIMBUS-123"
+                    }
+                ],
+                "VpcId": {
+                    "Ref": "VPC"
+                }
+            },
+            "Type": "AWS::EC2::RouteTable"
+        },
+        "publicSubnet01": {
+            "Properties": {
+                "AvailabilityZone": {
+                    "Ref": "AvailabilityZone01"
+                },
+                "CidrBlock": {
+                    "Ref": "PublicSubnet01Cidr"
+                },
+                "MapPublicIpOnLaunch": "true",
+                "Tags": [
+                    {
+                        "Key": "Environment",
+                        "Value": "Production"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "NMB",
+                                    "-PublicSubnet-01"
+                                ]
+                            ]
+                        }
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "Nimbus"
+                    },
+                    {
+                        "Key": "Ticket",
+                        "Value": "NIMBUS-123"
+                    }
+                ],
+                "VpcId": {
+                    "Ref": "VPC"
+                }
+            },
+            "Type": "AWS::EC2::Subnet"
+        },
+        "publicSubnet01Association": {
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "publicRouteTable"
+                },
+                "SubnetId": {
+                    "Ref": "publicSubnet01"
+                }
+            },
+            "Type": "AWS::EC2::SubnetRouteTableAssociation"
+        },
+        "publicSubnet02": {
+            "Properties": {
+                "AvailabilityZone": {
+                    "Ref": "AvailabilityZone02"
+                },
+                "CidrBlock": {
+                    "Ref": "PublicSubnet02Cidr"
+                },
+                "MapPublicIpOnLaunch": "true",
+                "Tags": [
+                    {
+                        "Key": "Environment",
+                        "Value": "Production"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "NMB",
+                                    "-PublicSubnet-02"
+                                ]
+                            ]
+                        }
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "Nimbus"
+                    },
+                    {
+                        "Key": "Ticket",
+                        "Value": "NIMBUS-123"
+                    }
+                ],
+                "VpcId": {
+                    "Ref": "VPC"
+                }
+            },
+            "Type": "AWS::EC2::Subnet"
+        },
+        "publicSubnet02Association": {
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "publicRouteTable"
+                },
+                "SubnetId": {
+                    "Ref": "publicSubnet02"
+                }
+            },
+            "Type": "AWS::EC2::SubnetRouteTableAssociation"
+        },
+        "rds01": {
+            "Properties": {
+                "AllocatedStorage": "500",
+                "AutoMinorVersionUpgrade": "false",
+                "BackupRetentionPeriod": "35",
+                "DBInstanceClass": "db.t2.micro",
+                "DBInstanceIdentifier": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "NMB",
+                            "-",
+                            "rds",
+                            "-",
+                            "01"
+                        ]
+                    ]
+                },
+                "DBName": "PlanPlus",
+                "DBParameterGroupName": "mysql-custom-parametergroup-5-7",
+                "DBSubnetGroupName": {
+                    "Ref": "privateDbSubnetGroup"
+                },
+                "Engine": "MySQL",
+                "EngineVersion": "5.7.19",
+                "KmsKeyId": "arn:aws:kms:ca-central-1:548829387871:key/7bedf96d-c86c-4e06-9fe6-69dsdf900ffd1",
+                "MasterUserPassword": "tq-pW2*fJyhL+Z3F",
+                "MasterUsername": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "rdsgroup",
+                            "1",
+                            "master"
+                        ]
+                    ]
+                },
+                "MultiAZ": "true",
+                "PubliclyAccessible": "false",
+                "StorageEncrypted": "true",
+                "StorageType": "gp2",
+                "Tags": [
+                    {
+                        "Key": "Environment",
+                        "Value": "Production"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "NMB",
+                                    "-",
+                                    "rds",
+                                    "-",
+                                    "01"
+                                ]
+                            ]
+                        }
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "Nimbus"
+                    },
+                    {
+                        "Key": "Ticket",
+                        "Value": "NIMBUS-123"
+                    }
+                ],
+                "VPCSecurityGroups": [
+                    {
+                        "Ref": "rdsSecurityGroup"
+                    }
+                ]
+            },
+            "Type": "AWS::RDS::DBInstance"
+        },
+        "rds02": {
+            "Properties": {
+                "AllocatedStorage": "50",
+                "AutoMinorVersionUpgrade": "false",
+                "BackupRetentionPeriod": "35",
+                "DBInstanceClass": "db.t2.micro",
+                "DBInstanceIdentifier": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "NMB",
+                            "-",
+                            "rds",
+                            "-",
+                            "02"
+                        ]
+                    ]
+                },
+                "DBName": "PlanPlus",
+                "DBParameterGroupName": "mysql-custom-parametergroup-5-7",
+                "DBSubnetGroupName": {
+                    "Ref": "privateDbSubnetGroup"
+                },
+                "Engine": "MySQL",
+                "EngineVersion": "5.7.19",
+                "KmsKeyId": "arn:aws:kms:ca-central-1:548829387871:key/7bedf96d-c86c-4e06-9fe6-69dsdf900ffd1",
+                "MasterUserPassword": "tq-pW2*fJyhL+Z3F",
+                "MasterUsername": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "rdsgroup",
+                            "2",
+                            "master"
+                        ]
+                    ]
+                },
+                "MultiAZ": "true",
+                "PubliclyAccessible": "false",
+                "StorageEncrypted": "true",
+                "StorageType": "gp2",
+                "Tags": [
+                    {
+                        "Key": "Environment",
+                        "Value": "Production"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "NMB",
+                                    "-",
+                                    "rds",
+                                    "-",
+                                    "02"
+                                ]
+                            ]
+                        }
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "Nimbus"
+                    },
+                    {
+                        "Key": "Ticket",
+                        "Value": "NIMBUS-123"
+                    }
+                ],
+                "VPCSecurityGroups": [
+                    {
+                        "Ref": "rdsSecurityGroup"
+                    }
+                ]
+            },
+            "Type": "AWS::RDS::DBInstance"
+        },
+        "rds03": {
+            "Properties": {
+                "AllocatedStorage": "150",
+                "AutoMinorVersionUpgrade": "false",
+                "BackupRetentionPeriod": "35",
+                "DBInstanceClass": "db.t2.micro",
+                "DBInstanceIdentifier": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "NMB",
+                            "-",
+                            "rds",
+                            "-",
+                            "03"
+                        ]
+                    ]
+                },
+                "DBName": "PlanPlus",
+                "DBParameterGroupName": "mysql-custom-parametergroup-5-7",
+                "DBSubnetGroupName": {
+                    "Ref": "privateDbSubnetGroup"
+                },
+                "Engine": "MySQL",
+                "EngineVersion": "5.7.19",
+                "KmsKeyId": "arn:aws:kms:ca-central-1:548829387871:key/7bedf96d-c86c-4e06-9fe6-69dsdf900ffd1",
+                "MasterUserPassword": "tq-pW2*fJyhL+Z3F",
+                "MasterUsername": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "rdsgroup",
+                            "3",
+                            "master"
+                        ]
+                    ]
+                },
+                "MultiAZ": "true",
+                "PubliclyAccessible": "false",
+                "StorageEncrypted": "true",
+                "StorageType": "gp2",
+                "Tags": [
+                    {
+                        "Key": "Environment",
+                        "Value": "Production"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "NMB",
+                                    "-",
+                                    "rds",
+                                    "-",
+                                    "03"
+                                ]
+                            ]
+                        }
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "Nimbus"
+                    },
+                    {
+                        "Key": "Ticket",
+                        "Value": "NIMBUS-123"
+                    }
+                ],
+                "VPCSecurityGroups": [
+                    {
+                        "Ref": "rdsSecurityGroup"
+                    }
+                ]
+            },
+            "Type": "AWS::RDS::DBInstance"
+        },
+        "rdsSecurityGroup": {
+            "Properties": {
+                "GroupDescription": "RDS security group",
+                "SecurityGroupIngress": [
+                    {
+                        "FromPort": {
+                            "Ref": "dbPort"
+                        },
+                        "IpProtocol": "tcp",
+                        "SourceSecurityGroupId": {
+                            "Ref": "basSecurityGroup"
+                        },
+                        "ToPort": {
+                            "Ref": "dbPort"
+                        }
+                    },
+                    {
+                        "FromPort": {
+                            "Ref": "dbPort"
+                        },
+                        "IpProtocol": "tcp",
+                        "SourceSecurityGroupId": {
+                            "Ref": "feSecurityGroup"
+                        },
+                        "ToPort": {
+                            "Ref": "dbPort"
+                        }
+                    }
+                ],
+                "Tags": [
+                    {
+                        "Key": "Environment",
+                        "Value": "Production"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "NMB",
+                                    "-rdsSecurityGroup"
+                                ]
+                            ]
+                        }
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "Nimbus"
+                    },
+                    {
+                        "Key": "Ticket",
+                        "Value": "NIMBUS-123"
+                    }
+                ],
+                "VpcId": {
+                    "Ref": "VPC"
+                }
+            },
+            "Type": "AWS::EC2::SecurityGroup"
+        },
+        "webAsgScalingIn": {
+            "Properties": {
+                "AdjustmentType": "ChangeInCapacity",
+                "AutoScalingGroupName": {
+                    "Ref": "webAutoScalingGroup"
+                },
+                "Cooldown": "360",
+                "ScalingAdjustment": "-1"
+            },
+            "Type": "AWS::AutoScaling::ScalingPolicy"
+        },
+        "webAsgScalingOut": {
+            "Properties": {
+                "AdjustmentType": "ChangeInCapacity",
+                "AutoScalingGroupName": {
+                    "Ref": "webAutoScalingGroup"
+                },
+                "Cooldown": "360",
+                "ScalingAdjustment": "1"
+            },
+            "Type": "AWS::AutoScaling::ScalingPolicy"
+        },
+        "webAutoScalingGroup": {
+            "Properties": {
+                "Cooldown": {
+                    "Ref": "webAsgCooldown"
+                },
+                "DesiredCapacity": {
+                    "Ref": "webAsgCapacity"
+                },
+                "HealthCheckGracePeriod": {
+                    "Ref": "webAsgHealthGrace"
+                },
+                "HealthCheckType": "EC2",
+                "LaunchConfigurationName": {
+                    "Ref": "webEC2LaunchConfiguration"
+                },
+                "MaxSize": {
+                    "Ref": "webAsgMaxSize"
+                },
+                "MetricsCollection": [
+                    {
+                        "Granularity": "1Minute"
+                    }
+                ],
+                "MinSize": {
+                    "Ref": "webAsgMinSize"
+                },
+                "Tags": [
+                    {
+                        "Key": "Environment",
+                        "PropagateAtLaunch": "true",
+                        "Value": "Production"
+                    },
+                    {
+                        "Key": "Name",
+                        "PropagateAtLaunch": "true",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "NMB",
+                                    "-",
+                                    "web"
+                                ]
+                            ]
+                        }
+                    },
+                    {
+                        "Key": "Project",
+                        "PropagateAtLaunch": "true",
+                        "Value": "Nimbus"
+                    },
+                    {
+                        "Key": "Ticket",
+                        "PropagateAtLaunch": "true",
+                        "Value": "NIMBUS-123"
+                    }
+                ],
+                "TargetGroupARNs": [
+                    {
+                        "Ref": "defaultTargetGroup"
+                    },
+                    {
+                        "Ref": "client1WebTargetGroup"
+                    },
+                    {
+                        "Ref": "client2WebTargetGroup"
+                    },
+                    {
+                        "Ref": "client3WebTargetGroup"
+                    }
+                ],
+                "VPCZoneIdentifier": [
+                    {
+                        "Ref": "privateWebSubnet01"
+                    },
+                    {
+                        "Ref": "privateWebSubnet02"
+                    }
+                ]
+            },
+            "Type": "AWS::AutoScaling::AutoScalingGroup"
+        },
+        "webEC2LaunchConfiguration": {
+            "Properties": {
+                "AssociatePublicIpAddress": "false",
+                "ImageId": "ami-f9a4209d",
+                "InstanceType": "t2.micro",
+                "KeyName": "nimbus-prod",
+                "SecurityGroups": [
+                    {
+                        "Ref": "feSecurityGroup"
+                    }
+                ]
+            },
+            "Type": "AWS::AutoScaling::LaunchConfiguration"
+        },
+        "webHighHttpRequestsAlarm": {
+            "Properties": {
+                "AlarmActions": [
+                    {
+                        "Ref": "webAsgScalingOut"
+                    }
+                ],
+                "AlarmDescription": "Alarm if more than 1000 http requests",
+                "ComparisonOperator": "GreaterThanThreshold",
+                "Dimensions": [
+                    {
+                        "Name": "AutoScalingGroupName",
+                        "Value": {
+                            "Ref": "webAutoScalingGroup"
+                        }
+                    }
+                ],
+                "EvaluationPeriods": "1",
+                "MetricName": "RequestCount",
+                "Namespace": "AWS/SQS",
+                "Period": "1800",
+                "Statistic": "Average",
+                "Threshold": "1000"
+            },
+            "Type": "AWS::CloudWatch::Alarm"
+        },
+        "webLowHttpRequestsAlarm": {
+            "Properties": {
+                "AlarmActions": [
+                    {
+                        "Ref": "webAsgScalingIn"
+                    }
+                ],
+                "AlarmDescription": "Alarm if less than 1000 http requests",
+                "ComparisonOperator": "LessThanThreshold",
+                "Dimensions": [
+                    {
+                        "Name": "AutoScalingGroupName",
+                        "Value": {
+                            "Ref": "webAutoScalingGroup"
+                        }
+                    }
+                ],
+                "EvaluationPeriods": "1",
+                "MetricName": "RequestCount",
+                "Namespace": "AWS/SQS",
+                "Period": "1800",
+                "Statistic": "Average",
+                "Threshold": "1000"
+            },
+            "Type": "AWS::CloudWatch::Alarm"
+        }
+    }
+}
